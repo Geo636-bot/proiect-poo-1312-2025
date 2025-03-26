@@ -1,25 +1,6 @@
-# Nu primesc notă pentru că nu am pus titlu și descriere
+# Hooked!
 
-### Folosiți template-ul corespunzător grupei voastre!
-
-| Laborant  | Link template                                |
-|-----------|----------------------------------------------|
-| Dragoș B  | https://github.com/Ionnier/oop-template      |
-| Tiberiu M | https://github.com/MaximTiberiu/oop-template |
-| Marius MC | https://github.com/mcmarius/oop-template     |
-
-### Important!
-
-Aveți voie cu cod generat de modele de limbaj la care nu ați contribuit semnificativ doar în folder-ul `generated`.
-Codul generat pus "ca să fie"/pe care nu îl înțelegeți se punctează doar pentru puncte bonus, doar în contextul
-în care oferă funcționalități ajutătoare și doar dacă are sens.
-
-O cerință nu se consideră îndeplinită dacă este realizată doar prin cod generat.
-
-- **Fără cod de umplutură/fără sens!**
-- **Fără copy-paste!**
-- **Fără variabile globale!**
-- **Fără atribute publice!**
+## Bun venit la Hooked!(Jocul va rula in terminal). Probabil ca ti ai dat seama deja din titlu ca acesta este un joc de pescuit.Jocul este un stil tycoon adica la inceput ai putini bani dupa care tot prinzi peste il vinzi faci bani si iti cumperi equipment mai bun.Equipment ul se refera doar la undita si momeala.Jocul se desfasoara pe 3 zone:Zona 1(Bucuresti), Zona 2(Delta Dunarii), Zona 3(Marea Neagra).Pe fiecare zona se pot face 4 upgrade uri pentru un total de 12 upgrade uri atat pe undita cat si pe momeala.Upgrade ul pe undita functioneaza astfel la inceput cand prinzi un peste ai 60% sansa de esec un upgrade iti scade sansa cu 5%.Upgrade ul pe momeala iti ridica multiplicatorul cand prinzi un peste ex. prinzi un peste care costa 5$ X 2(multiplicatorul)= 10$. Inca un detaliu important este ca in fiecare zona sunt 4 tipuri de pesti comun,rar,epic,legendar (50%,30%,15%,5%) raritate mai mica -> pret mai mare.
 
 ### Tema 0
 
