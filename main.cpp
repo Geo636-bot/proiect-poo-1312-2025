@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <chrono>
+#include <thread>
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
@@ -403,6 +405,35 @@ int getValidatedInput(int min, int max) {
     }
 }
 
+string generateRandomWord(int length) {
+    string word;
+    uniform_int_distribution<int> dist('a', 'z');
+    for (int i = 0; i < length; i++) {
+        word += dist(rng);
+    }
+    return word;
+}
+
+bool minigame() {
+    string targetWord = generateRandomWord(5);
+    cout << "\nQUICK! Type this word within 3 seconds: " << targetWord << "\n> ";
+
+    auto start = chrono::steady_clock::now();
+    string input;
+    cin >> input;
+    auto end = chrono::steady_clock::now();
+
+    double elapsed = chrono::duration_cast<chrono::milliseconds>(end - start).count() / 1000.0;
+
+    if (input == targetWord && elapsed <= 3.0) {
+        cout << "Success! (" << fixed << setprecision(1) << elapsed << "s)\n";
+        return true;
+    } else {
+        cout << "Too slow or wrong word! (" << elapsed << "s)\n";
+        return false;
+    }
+}
+
 void displayMainMenu() {
     cout << "\n=== Hooked ===\n"
          << "1. Go Fishing\n"
@@ -460,8 +491,12 @@ int main() {
         switch (choice) {
             case 1: { // Fishing
                 if (player.getEquipment().attemptCatch()) {
-                    Fish caught = world.generateFish(player.getCurrentZone());
-                    player.catchFish(caught);
+                    if (minigame()) {
+                        Fish caught = world.generateFish(player.getCurrentZone());
+                        player.catchFish(caught);
+                    } else {
+                        cout << "\nThe fish got away!\n";
+                    }
                 } else {
                     cout << "\nThe fish got away!\n";
                 }
