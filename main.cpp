@@ -50,9 +50,9 @@ public:
         return os;
     }
 
-    const string& getRarity() const { return rarity; }
-    int getZone() const { return zone; }
-    const string& getName() const { return name; }
+//     const string& getRarity() const { return rarity; }
+//     int getZone() const { return zone; }
+//     const string& getName() const { return name; }
 };
 
 // ======================== Player Equipment ========================
