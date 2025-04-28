@@ -17,6 +17,7 @@ const vector<string> RARITIES = {"Common", "Rare", "Epic", "Legendary"};
 const vector<double> RARITY_PROBS = {0.5, 0.3, 0.15, 0.05};
 const vector<double> RARITY_MULTIPLIERS = {1.0, 1.5, 2.5, 5.0};
 const int UPGRADES_PER_ZONE = 4;
+const vector<int> TRAVEL_COSTS = {0, 1000, 5000};
 
 // Better random number generation
 mt19937 createRandomEngine() {
@@ -119,9 +120,12 @@ private:
     int currentZone;
     Equipment equipment;
     map<string, int> fishCollection; // Tracks caught fish
+    vector<bool> zonesUnlocked;
 
 public:
-    Player(const string& n) : name(n), money(100.0), currentZone(0) {}
+    Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
+        zonesUnlocked[0] = true; // Starting zone is always unlocked
+    }
 
     void catchFish(const Fish& fish) {
         double value = fish.getValue(equipment.getBaitMultiplier());
@@ -151,10 +155,43 @@ public:
         return false;
     }
 
-    void travelToZone(int zone) {
-        if (zone >= 0 && zone < 3) {
+    bool canTravelToZone(int zone) const {
+        // Can't travel to current or locked zones
+        if (zone == currentZone || zone < 0 || zone >= 3) return false;
+
+        // Check if previous zone was fully upgraded (if going forward)
+        if (zone > currentZone) {
+            // Check if all previous zones are fully upgraded
+            for (int z = 0; z < zone; z++) {
+                if (equipment.getUpgradeCount(z, 'r') < UPGRADES_PER_ZONE ||
+                    equipment.getUpgradeCount(z, 'b') < UPGRADES_PER_ZONE) {
+                    return false;
+                    }
+            }
+        }
+        return true;
+    }
+
+
+    bool travelToZone(int zone) {
+        if (zone == currentZone) return true;
+
+        if (!canTravelToZone(zone)) {
+            cout << "\nYou must fully upgrade both rod and bait in all previous zones before traveling to "
+                 << ZONES[zone] << "!\n";
+            return false;
+        }
+
+        if (money >= TRAVEL_COSTS[zone]) {
+            money -= TRAVEL_COSTS[zone];
             currentZone = zone;
-            cout << "\nTraveled to " << ZONES[zone] << "\n";
+            zonesUnlocked[zone] = true;
+            cout << "\nTraveled to " << ZONES[zone] << " for $" << TRAVEL_COSTS[zone] << "\n";
+            return true;
+        } else {
+            cout << "\nNot enough money to travel to " << ZONES[zone]
+                 << "! Need $" << TRAVEL_COSTS[zone] << "\n";
+            return false;
         }
     }
 
@@ -273,10 +310,18 @@ void displayUpgradeMenu(const Player& player) {
          << "Choose an option (0-2): ";
 }
 
-void displayZoneMenu() {
+void displayZoneMenu(const Player& player) {
     cout << "\n=== Travel to New Zone ===\n";
     for (size_t i = 0; i < ZONES.size(); i++) {
-        cout << i+1 << ". " << ZONES[i] << "\n";
+        cout << i+1 << ". " << ZONES[i];
+        if (i == player.getCurrentZone()) {
+            cout << " (Current)";
+        } else if (!player.canTravelToZone(i)) {
+            cout << " [Locked]";
+        } else {
+            cout << " - Travel Cost: $" << TRAVEL_COSTS[i];
+        }
+        cout << "\n";
     }
     cout << "0. Back to Main Menu\n"
          << "Choose a zone (0-" << ZONES.size() << "): ";
@@ -320,7 +365,7 @@ int main() {
                 break;
             }
             case 3: { // Travel
-                displayZoneMenu();
+                displayZoneMenu(player);
                 int zoneChoice = getValidatedInput(0, ZONES.size());
 
                 if (zoneChoice > 0) {
