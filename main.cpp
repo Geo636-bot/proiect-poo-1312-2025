@@ -124,7 +124,7 @@ private:
     vector<map<string, bool>> zoneFishCaught;
 
 public:
-    Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
+    explicit Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
         zonesUnlocked[0] = true;
         zoneFishCaught.resize(3);
     }
