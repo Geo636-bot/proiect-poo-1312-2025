@@ -50,9 +50,9 @@ public:
         return os;
     }
 
-    string getRarity() const { return rarity; }
+    const string& getRarity() const { return rarity; }
     int getZone() const { return zone; }
-    string getName() const { return name; }
+    const string& getName() const { return name; }
 };
 
 // ======================== Player Equipment ========================
@@ -124,8 +124,9 @@ private:
 
 public:
     explicit Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
-        zonesUnlocked[0] = true; // Starting zone is always unlocked
+    zonesUnlocked[0] = true; // Starting zone is always unlocked
     }
+
 
     void catchFish(const Fish& fish) {
         double value = fish.getValue(equipment.getBaitMultiplier());
@@ -314,9 +315,9 @@ void displayZoneMenu(const Player& player) {
     cout << "\n=== Travel to New Zone ===\n";
     for (size_t i = 0; i < ZONES.size(); i++) {
         cout << i+1 << ". " << ZONES[i];
-        if (i == player.getCurrentZone()) {
+        if (static_cast<int>(i) == player.getCurrentZone()) {  // Fixed comparison
             cout << " (Current)";
-        } else if (!player.canTravelToZone(i)) {
+        } else if (!player.canTravelToZone(static_cast<int>(i))) {  // Also fixed here
             cout << " [Locked]";
         } else {
             cout << " - Travel Cost: $" << TRAVEL_COSTS[i];
