@@ -50,9 +50,9 @@ public:
         return os;
     }
 
-//     const string& getRarity() const { return rarity; }
-//     int getZone() const { return zone; }
-     const string& getName() const { return name; }
+    const string& getRarity() const { return rarity; }
+    int getZone() const { return zone; }
+    const string& getName() const { return name; }
 };
 
 // ======================== Player Equipment ========================
@@ -119,25 +119,26 @@ private:
     double money;
     int currentZone;
     Equipment equipment;
-    map<string, int> fishCollection; // Tracks caught fish
+    map<string, int> fishCollection;
     vector<bool> zonesUnlocked;
+    vector<map<string, bool>> zoneFishCaught;
 
 public:
-    explicit Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
-    zonesUnlocked[0] = true; // Starting zone is always unlocked
+    Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
+        zonesUnlocked[0] = true;
+        zoneFishCaught.resize(3);
     }
-
 
     void catchFish(const Fish& fish) {
         double value = fish.getValue(equipment.getBaitMultiplier());
         money += value;
         fishCollection[fish.getName()]++;
-        cout << "Sold " << fish << " for $" << fixed << setprecision(2) << value << "\n";
-    }
+        zoneFishCaught[fish.getZone()][fish.getName()] = true;
 
-    int calculateUpgradeCost(char type) const {
-        int upgrades = equipment.getUpgradeCount(currentZone, type);
-        return 100 * (currentZone + 1) * (upgrades + 1);
+        cout << "Caught a " << fish.getRarity() << " " << fish << " for $"
+             << fixed << setprecision(2) << value << "\n";
+
+        checkZoneCompletion(fish.getZone());
     }
 
     bool attemptUpgrade(char type) {
@@ -156,31 +157,13 @@ public:
         return false;
     }
 
-    bool canTravelToZone(int zone) const {
-        // Can't travel to current or locked zones
-        if (zone == currentZone || zone < 0 || zone >= 3) return false;
-
-        // Check if previous zone was fully upgraded (if going forward)
-        if (zone > currentZone) {
-            // Check if all previous zones are fully upgraded
-            for (int z = 0; z < zone; z++) {
-                if (equipment.getUpgradeCount(z, 'r') < UPGRADES_PER_ZONE ||
-                    equipment.getUpgradeCount(z, 'b') < UPGRADES_PER_ZONE) {
-                    return false;
-                    }
-            }
-        }
-        return true;
-    }
-
-
-    bool travelToZone(int zone) {
-        if (zone == currentZone) return true;
+    void travelToZone(int zone) {
+        if (zone == currentZone) return;
 
         if (!canTravelToZone(zone)) {
             cout << "\nYou must fully upgrade both rod and bait in all previous zones before traveling to "
                  << ZONES[zone] << "!\n";
-            return false;
+            return;
         }
 
         if (money >= TRAVEL_COSTS[zone]) {
@@ -188,11 +171,9 @@ public:
             currentZone = zone;
             zonesUnlocked[zone] = true;
             cout << "\nTraveled to " << ZONES[zone] << " for $" << TRAVEL_COSTS[zone] << "\n";
-            return true;
         } else {
             cout << "\nNot enough money to travel to " << ZONES[zone]
                  << "! Need $" << TRAVEL_COSTS[zone] << "\n";
-            return false;
         }
     }
 
@@ -216,6 +197,61 @@ public:
         }
     }
 
+    // Helper methods
+    int calculateUpgradeCost(char type) const {
+        int upgrades = equipment.getUpgradeCount(currentZone, type);
+        return 100 * (currentZone + 1) * (upgrades + 1);
+    }
+
+    bool canTravelToZone(int zone) const {
+        if (zone == currentZone || zone < 0 || zone >= 3) return false;
+
+        if (zone > currentZone) {
+            for (int z = 0; z < zone; z++) {
+                if (equipment.getUpgradeCount(z, 'r') < UPGRADES_PER_ZONE ||
+                    equipment.getUpgradeCount(z, 'b') < UPGRADES_PER_ZONE) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    void checkZoneCompletion(int zone) {
+        const vector<string> zoneFishNames = {
+            "Carp", "Pike", "Catfish", "Sturgeon",
+            "Bream", "Zander", "Pike-Perch", "Beluga",
+            "Mackerel", "Sea Bass", "Tuna", "Bluefin Tuna"
+        };
+
+        int zoneStartIdx = zone * 4;
+        bool allCaught = true;
+
+        for (int i = 0; i < 4; i++) {
+            string fishName = zoneFishNames[zoneStartIdx + i];
+            if (!zoneFishCaught[zone][fishName]) {
+                allCaught = false;
+                break;
+            }
+        }
+
+        if (allCaught) {
+            cout << "\n************************************\n";
+            cout << "*  CONGRATULATIONS!                *\n";
+            cout << "*  You've caught all fish species  *\n";
+            cout << "*  in " << setw(12) << left << ZONES[zone] << "!      *\n";
+            cout << "************************************\n\n";
+
+            double bonus = 500.0 * (zone + 1);
+            money += bonus;
+            cout << "Received zone completion bonus: $" << bonus << "!\n";
+        }
+    }
+
+    bool hasCaughtFish(const string& fishName) const {
+        return fishCollection.count(fishName) > 0;
+    }
+
     double getMoney() const { return money; }
     int getCurrentZone() const { return currentZone; }
     const Equipment& getEquipment() const { return equipment; }
@@ -225,6 +261,7 @@ public:
 class FishingWorld {
 private:
     vector<vector<Fish>> zoneFish;
+    vector<vector<string>> zoneFishNames;
 
 public:
     FishingWorld() {
@@ -254,7 +291,17 @@ public:
             Fish("Tuna", "Epic", 125.0, 2),
             Fish("Bluefin Tuna", "Legendary", 300.0, 2)
         };
+        zoneFishNames = {
+            {"Carp", "Pike", "Catfish", "Sturgeon"},
+            {"Bream", "Zander", "Pike-Perch", "Beluga"},
+            {"Mackerel", "Sea Bass", "Tuna", "Bluefin Tuna"}
+        };
     }
+
+    const vector<string>& getFishNamesForZone(int zone) const {
+        return zoneFishNames[zone];
+    }
+
 
     Fish generateFish(int zone) const {
         uniform_real_distribution<double> dist(0.0, 1.0);
@@ -289,7 +336,7 @@ int getValidatedInput(int min, int max) {
 }
 
 void displayMainMenu() {
-    cout << "\n=== Fishing Tycoon ===\n"
+    cout << "\n=== Hooked ===\n"
          << "1. Go Fishing\n"
          << "2. Upgrade Equipment\n"
          << "3. Travel to New Zone\n"
@@ -330,7 +377,7 @@ void displayZoneMenu(const Player& player) {
 
 // ======================== Main Game Loop ========================
 int main() {
-    cout << "=== Welcome to Fishing Tycoon! ===\n";
+    cout << "=== Welcome to Hooked! ===\n";
     cout << "Enter your name: ";
     string playerName;
     getline(cin, playerName);
@@ -374,14 +421,29 @@ int main() {
                 }
                 break;
             }
-            case 4: // Status
+            case 4: { // Status
                 player.printStatus();
+
+                // Show zone completion progress
+                int currentZone = player.getCurrentZone();
+                int caughtCount = 0;
+                auto zoneFish = world.getFishNamesForZone(currentZone);
+
+                for (const auto& fishName : zoneFish) {
+                    if (player.hasCaughtFish(fishName)) {
+                        caughtCount++;
+                    }
+                }
+
+                cout << "\nZone Progress: " << caughtCount << "/" << zoneFish.size()
+                     << " fish species caught in " << ZONES[currentZone] << "\n";
                 break;
+            }
             case 5: // Fish Collection
                 player.showCollection();
                 break;
             case 0: // Quit
-                cout << "\nThanks for playing Fishing Tycoon, " << playerName << "!\n";
+                cout << "\nThanks for playing Hooked, " << playerName << "!\n";
                 return 0;
         }
     }
