@@ -1,168 +1,342 @@
 #include <iostream>
 #include <vector>
+#include <string>
+#include <map>
 #include <cstdlib>
 #include <ctime>
-#include <string>
+#include <iomanip>
+#include <limits>
+#include <algorithm>
+#include <random>
+
 using namespace std;
 
-// Struct pentru reprezentarea unui peste
-struct Fish {
+// ======================== Game Constants ========================
+const vector<string> ZONES = {"Bucharest", "Danube Delta", "Black Sea"};
+const vector<string> RARITIES = {"Common", "Rare", "Epic", "Legendary"};
+const vector<double> RARITY_PROBS = {0.5, 0.3, 0.15, 0.05};
+const vector<double> RARITY_MULTIPLIERS = {1.0, 1.5, 2.5, 5.0};
+const int UPGRADES_PER_ZONE = 4;
+
+// Better random number generation
+mt19937 createRandomEngine() {
+    random_device rd;
+    return mt19937(rd());
+}
+
+auto rng = createRandomEngine();
+
+// ======================== Fish Class ========================
+class Fish {
+private:
+    string name;
     string rarity;
-    int baseValue;
+    double baseValue;
+    int zone;
+
+public:
+    Fish(const string& n, const string& r, double v, int z)
+        : name(n), rarity(r), baseValue(v), zone(z) {}
+
+    double getValue(double baitMultiplier) const {
+        auto it = find(RARITIES.begin(), RARITIES.end(), rarity);
+        int rarityIndex = distance(RARITIES.begin(), it);
+        return baseValue * baitMultiplier * (zone + 1) * RARITY_MULTIPLIERS[rarityIndex];
+    }
+
+    friend ostream& operator<<(ostream& os, const Fish& fish) {
+        os << fish.rarity << " " << fish.name << " (Zone " << fish.zone + 1 << ")";
+        return os;
+    }
+
+    string getRarity() const { return rarity; }
+    int getZone() const { return zone; }
+    string getName() const { return name; }
 };
 
-// Clasa Player
+// ======================== Player Equipment ========================
+class Equipment {
+private:
+    double failChance; // Starts at 60%
+    double baitMultiplier; // Starts at 1.0
+    int zoneUpgrades[3][2] = {{0}}; // [zone][0=rod, 1=bait]
+
+public:
+    Equipment() : failChance(0.6), baitMultiplier(1.0) {}
+
+    bool attemptCatch() const {
+        uniform_real_distribution<double> dist(0.0, 1.0);
+        return dist(rng) > failChance;
+    }
+
+    double getBaitMultiplier() const { return baitMultiplier; }
+
+    void upgradeRod(int zone) {
+        if (zone < 0 || zone >= 3) return;
+
+        if (zoneUpgrades[zone][0] < UPGRADES_PER_ZONE) {
+            failChance = max(0.0, failChance - 0.05); // Prevent negative chance
+            zoneUpgrades[zone][0]++;
+            cout << "Rod upgraded for " << ZONES[zone] << "! New fail chance: "
+                 << fixed << setprecision(0) << (failChance * 100) << "%\n";
+        } else {
+            cout << "Max rod upgrades reached for " << ZONES[zone] << "!\n";
+        }
+    }
+
+    void upgradeBait(int zone) {
+        if (zone < 0 || zone >= 3) return;
+
+        if (zoneUpgrades[zone][1] < UPGRADES_PER_ZONE) {
+            baitMultiplier += 0.5;
+            zoneUpgrades[zone][1]++;
+            cout << "Bait upgraded for " << ZONES[zone] << "! New multiplier: "
+                 << fixed << setprecision(1) << baitMultiplier << "x\n";
+        } else {
+            cout << "Max bait upgrades reached for " << ZONES[zone] << "!\n";
+        }
+    }
+
+    void printUpgrades() const {
+        cout << "\nCurrent Upgrades:\n";
+        for (int z = 0; z < 3; z++) {
+            cout << ZONES[z] << ": Rod " << zoneUpgrades[z][0] << "/" << UPGRADES_PER_ZONE
+                 << ", Bait " << zoneUpgrades[z][1] << "/" << UPGRADES_PER_ZONE << "\n";
+        }
+    }
+
+    int getUpgradeCount(int zone, char type) const {
+        if (zone < 0 || zone >= 3) return 0;
+        return zoneUpgrades[zone][type == 'r' ? 0 : 1];
+    }
+};
+
+// ======================== Player Class ========================
 class Player {
 private:
+    string name;
     double money;
-    int rodLevel;    // influenteaza sansele de succes (reduce sansele de fail)
-    int baitLevel;   // influenteaza multiplicatorul castigului
+    int currentZone;
+    Equipment equipment;
+    map<string, int> fishCollection; // Tracks caught fish
+
 public:
-    Player() : money(50.0), rodLevel(0), baitLevel(0) {}
+    Player(const string& n) : name(n), money(100.0), currentZone(0) {}
+
+    void catchFish(const Fish& fish) {
+        double value = fish.getValue(equipment.getBaitMultiplier());
+        money += value;
+        fishCollection[fish.getName()]++;
+        cout << "Sold " << fish << " for $" << fixed << setprecision(2) << value << "\n";
+    }
+
+    int calculateUpgradeCost(char type) const {
+        int upgrades = equipment.getUpgradeCount(currentZone, type);
+        return 100 * (currentZone + 1) * (upgrades + 1);
+    }
+
+    bool attemptUpgrade(char type) {
+        int cost = calculateUpgradeCost(type);
+
+        if (money >= cost) {
+            money -= cost;
+            if (type == 'r') {
+                equipment.upgradeRod(currentZone);
+            } else {
+                equipment.upgradeBait(currentZone);
+            }
+            return true;
+        }
+        cout << "Not enough money! Need $" << cost << "\n";
+        return false;
+    }
+
+    void travelToZone(int zone) {
+        if (zone >= 0 && zone < 3) {
+            currentZone = zone;
+            cout << "\nTraveled to " << ZONES[zone] << "\n";
+        }
+    }
+
+    void printStatus() const {
+        cout << "\n=== " << name << " ===\n"
+             << "Zone: " << ZONES[currentZone] << "\n"
+             << "Money: $" << fixed << setprecision(2) << money << "\n"
+             << "Fish caught: " << fishCollection.size() << " different species\n";
+        equipment.printUpgrades();
+    }
+
+    void showCollection() const {
+        cout << "\n=== Fish Collection ===\n";
+        if (fishCollection.empty()) {
+            cout << "You haven't caught any fish yet!\n";
+            return;
+        }
+
+        for (const auto& entry : fishCollection) {
+            cout << entry.first << ": " << entry.second << " caught\n";
+        }
+    }
 
     double getMoney() const { return money; }
-    int getRodLevel() const { return rodLevel; }
-    int getBaitLevel() const { return baitLevel; }
+    int getCurrentZone() const { return currentZone; }
+    const Equipment& getEquipment() const { return equipment; }
+};
 
-    double getFailureChance() const {
-        return 60.0 - rodLevel * 5; // scade 5% la fiecare upgrade
+// ======================== Game World ========================
+class FishingWorld {
+private:
+    vector<vector<Fish>> zoneFish;
+
+public:
+    FishingWorld() {
+        // Initialize fish for each zone
+        zoneFish.resize(3);
+
+        // Zone 1 - Bucharest
+        zoneFish[0] = {
+            Fish("Carp", "Common", 5.0, 0),
+            Fish("Pike", "Rare", 15.0, 0),
+            Fish("Catfish", "Epic", 40.0, 0),
+            Fish("Sturgeon", "Legendary", 100.0, 0)
+        };
+
+        // Zone 2 - Danube Delta
+        zoneFish[1] = {
+            Fish("Bream", "Common", 10.0, 1),
+            Fish("Zander", "Rare", 30.0, 1),
+            Fish("Pike-Perch", "Epic", 75.0, 1),
+            Fish("Beluga", "Legendary", 200.0, 1)
+        };
+
+        // Zone 3 - Black Sea
+        zoneFish[2] = {
+            Fish("Mackerel", "Common", 20.0, 2),
+            Fish("Sea Bass", "Rare", 50.0, 2),
+            Fish("Tuna", "Epic", 125.0, 2),
+            Fish("Bluefin Tuna", "Legendary", 300.0, 2)
+        };
     }
 
-    double getBaitMultiplier() const {
-        return 1.0 + baitLevel * 0.5; // fiecare upgrade creste cu 0.5x
-    }
+    Fish generateFish(int zone) const {
+        uniform_real_distribution<double> dist(0.0, 1.0);
+        double randVal = dist(rng);
+        double cumulative = 0.0;
 
-    void addMoney(double amount) {
-        money += amount;
-    }
-
-    bool buyRodUpgrade() {
-        double cost = 50 + rodLevel * 50;
-        if (money >= cost && rodLevel < 4) {
-            money -= cost;
-            rodLevel++;
-            cout << "Undita imbunatatita la nivelul " << rodLevel << "!\n";
-            return true;
-        } else {
-            cout << "Nu ai suficienti bani sau ai atins nivelul maxim pentru undita.\n";
-            return false;
+        for (size_t i = 0; i < RARITY_PROBS.size(); i++) {
+            cumulative += RARITY_PROBS[i];
+            if (randVal <= cumulative) {
+                return zoneFish[zone][i];
+            }
         }
-    }
-
-    bool buyBaitUpgrade() {
-        double cost = 50 + baitLevel * 50;
-        if (money >= cost && baitLevel < 4) {
-            money -= cost;
-            baitLevel++;
-            cout << "Momeala imbunatatita la nivelul " << baitLevel << "!\n";
-            return true;
-        } else {
-            cout << "Nu ai suficienti bani sau ai atins nivelul maxim pentru momeala.\n";
-            return false;
-        }
+        return zoneFish[zone][0]; // Default to common
     }
 };
 
-// Functie care returneaza un peste pe baza zonei si sanselor
-Fish catchFish(int zone) {
-    int chance = rand() % 100 + 1;
-    Fish f;
-
-    // Stabilim valorile in functie de raritate
-    if (chance <= 50) {
-        f.rarity = "Common";
-        f.baseValue = 10 * zone;
-    } else if (chance <= 80) {
-        f.rarity = "Rare";
-        f.baseValue = 20 * zone;
-    } else if (chance <= 95) {
-        f.rarity = "Epic";
-        f.baseValue = 40 * zone;
-    } else {
-        f.rarity = "Legendary";
-        f.baseValue = 100 * zone;
+// ======================== Game Interface ========================
+int getValidatedInput(int min, int max) {
+    int choice;
+    while (true) {
+        if (cin >> choice) {
+            if (choice >= min && choice <= max) {
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                return choice;
+            }
+        }
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Invalid input. Please enter a number between "
+             << min << " and " << max << ": ";
     }
-    return f;
 }
 
-void showMenu() {
-    cout << "\n=== Hooked: Tycoon Fishing Game ===\n";
-    cout << "1. Pescuieste\n";
-    cout << "2. Cumpara upgrade undita\n";
-    cout << "3. Cumpara upgrade momeala\n";
-    cout << "4. Schimba zona\n";
-    cout << "5. Arata status\n";
-    cout << "0. Iesire\n";
-    cout << "Alege o optiune: ";
+void displayMainMenu() {
+    cout << "\n=== Fishing Tycoon ===\n"
+         << "1. Go Fishing\n"
+         << "2. Upgrade Equipment\n"
+         << "3. Travel to New Zone\n"
+         << "4. View Status\n"
+         << "5. View Fish Collection\n"
+         << "0. Quit Game\n"
+         << "Choose an option (0-5): ";
 }
 
+void displayUpgradeMenu(const Player& player) {
+    int rodCost = player.calculateUpgradeCost('r');
+    int baitCost = player.calculateUpgradeCost('b');
+
+    cout << "\n=== Upgrade Equipment ===\n"
+         << "Current Money: $" << fixed << setprecision(2) << player.getMoney() << "\n\n"
+         << "1. Upgrade Rod (-5% fail chance) - $" << rodCost << "\n"
+         << "2. Upgrade Bait (+0.5x multiplier) - $" << baitCost << "\n"
+         << "0. Back to Main Menu\n"
+         << "Choose an option (0-2): ";
+}
+
+void displayZoneMenu() {
+    cout << "\n=== Travel to New Zone ===\n";
+    for (size_t i = 0; i < ZONES.size(); i++) {
+        cout << i+1 << ". " << ZONES[i] << "\n";
+    }
+    cout << "0. Back to Main Menu\n"
+         << "Choose a zone (0-" << ZONES.size() << "): ";
+}
+
+// ======================== Main Game Loop ========================
 int main() {
-    srand(time(0));
-    Player player;
-    int zone = 1; // Incepem in zona Bucuresti
-    bool running = true;
+    cout << "=== Welcome to Fishing Tycoon! ===\n";
+    cout << "Enter your name: ";
+    string playerName;
+    getline(cin, playerName);
 
-    cout << "Bine ai venit in Hooked! Incepi jocul cu $" << player.getMoney() << ".\n";
-    cout << "Esti in zona 1: Bucuresti.\n";
+    Player player(playerName);
+    FishingWorld world;
 
-    while (running) {
-        showMenu();
-        int choice;
-        cin >> choice;
+    while (true) {
+        displayMainMenu();
+        int choice = getValidatedInput(0, 5);
 
         switch (choice) {
-        case 1: { // Pescuieste
-            cout << "Incearca sa prinzi un peste...\n";
-            double failChance = player.getFailureChance();
-            int roll = rand() % 100 + 1;
-            if (roll <= failChance) {
-                cout << "Ghinion! Pestele a scapat!\n";
-            } else {
-                Fish f = catchFish(zone);
-                double profit = f.baseValue * player.getBaitMultiplier();
-                cout << "Ai prins un peste de tip " << f.rarity << " care valoreaza $" << profit << "!\n";
-                player.addMoney(profit);
+            case 1: { // Fishing
+                if (player.getEquipment().attemptCatch()) {
+                    Fish caught = world.generateFish(player.getCurrentZone());
+                    player.catchFish(caught);
+                } else {
+                    cout << "\nThe fish got away!\n";
+                }
+                break;
             }
-            break;
-        }
+            case 2: { // Upgrades
+                while (true) {
+                    displayUpgradeMenu(player);
+                    int upgradeChoice = getValidatedInput(0, 2);
 
-        case 2:
-            player.buyRodUpgrade();
-            break;
+                    if (upgradeChoice == 0) break;
 
-        case 3:
-            player.buyBaitUpgrade();
-            break;
-
-        case 4:
-            cout << "Alege zona (1: Bucuresti, 2: Delta Dunarii, 3: Marea Neagra): ";
-            cin >> zone;
-            if (zone < 1 || zone > 3) {
-                cout << "Zona invalida. Ramine zona curenta.\n";
-                zone = 1;
-            } else {
-                cout << "Te-ai mutat in zona " << zone << ".\n";
+                    if (upgradeChoice == 1 || upgradeChoice == 2) {
+                        player.attemptUpgrade(upgradeChoice == 1 ? 'r' : 'b');
+                    }
+                }
+                break;
             }
-            break;
+            case 3: { // Travel
+                displayZoneMenu();
+                int zoneChoice = getValidatedInput(0, ZONES.size());
 
-        case 5:
-            cout << "\n--- Status ---\n";
-            cout << "Bani: $" << player.getMoney() << endl;
-            cout << "Zona curenta: " << zone << endl;
-            cout << "Nivel undita: " << player.getRodLevel() << " (Sansa de fail: " << player.getFailureChance() << "%)\n";
-            cout << "Nivel momeala: " << player.getBaitLevel() << " (Multiplicator: x" << player.getBaitMultiplier() << ")\n";
-            break;
-
-        case 0:
-            running = false;
-            cout << "Multumim ca ai jucat Hooked! Spor la pescuit!\n";
-            break;
-
-        default:
-            cout << "Optiune invalida.\n";
+                if (zoneChoice > 0) {
+                    player.travelToZone(zoneChoice - 1);
+                }
+                break;
+            }
+            case 4: // Status
+                player.printStatus();
+                break;
+            case 5: // Fish Collection
+                player.showCollection();
+                break;
+            case 0: // Quit
+                cout << "\nThanks for playing Fishing Tycoon, " << playerName << "!\n";
+                return 0;
         }
     }
-
-    return 0;
 }
-
