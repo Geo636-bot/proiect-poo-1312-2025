@@ -36,8 +36,27 @@ private:
     int zone;
 
 public:
+    // Constructor
     Fish(const string& n, const string& r, double v, int z)
         : name(n), rarity(r), baseValue(v), zone(z) {}
+
+    // Copy Constructor
+    Fish(const Fish& other)
+        : name(other.name), rarity(other.rarity), baseValue(other.baseValue), zone(other.zone) {}
+
+    // Operator=
+    Fish& operator=(const Fish& other) {
+        if (this != &other) { // protect against self-assignment
+            name = other.name;
+            rarity = other.rarity;
+            baseValue = other.baseValue;
+            zone = other.zone;
+        }
+        return *this;
+    }
+
+    // Destructor
+    ~Fish() = default; // No dynamic memory, default is fine
 
     double getValue(double baitMultiplier) const {
         auto it = find(RARITIES.begin(), RARITIES.end(), rarity);
@@ -64,6 +83,19 @@ private:
 
 public:
     Equipment() : failChance(0.6), baitMultiplier(1.0) {}
+
+    friend ostream& operator<<(ostream& os, const Equipment& eq) {
+        os << "\n=== Equipment Status ==="
+           << "\nFail Chance: " << fixed << setprecision(0) << (eq.failChance * 100) << "%"
+           << "\nBait Multiplier: " << fixed << setprecision(1) << eq.baitMultiplier << "x"
+           << "\nZone Upgrades:";
+
+        for (int z = 0; z < 3; z++) {
+            os << "\n  " << ZONES[z] << ": Rod " << eq.zoneUpgrades[z][0] << "/4, Bait "
+               << eq.zoneUpgrades[z][1] << "/4";
+        }
+        return os;
+    }
 
     bool attemptCatch() const {
         uniform_real_distribution<double> dist(0.0, 1.0);
@@ -124,9 +156,33 @@ private:
     vector<map<string, bool>> zoneFishCaught;
 
 public:
-    explicit Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
+
+    Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
         zonesUnlocked[0] = true;
         zoneFishCaught.resize(3);
+    }
+
+    friend ostream& operator<<(ostream& os, const Player& player) {
+        os << "\n=== Player Status ==="
+           << "\nName: " << player.name
+           << "\nMoney: $" << fixed << setprecision(2) << player.money
+           << "\nCurrent Zone: " << ZONES[player.currentZone]
+           << "\nFish Caught: " << player.fishCollection.size() << " species";
+
+
+        // Display zone completion status
+        os << "\n\nZone Progress:";
+        for (size_t z = 0; z < ZONES.size(); z++) {
+            int caught = 0;
+            if (z < player.zoneFishCaught.size()) {
+                for (const auto& fish : player.zoneFishCaught[z]) {
+                    if (fish.second) caught++;
+                }
+            }
+            os << "\n  " << ZONES[z] << ": " << caught << "/4 fish";
+        }
+
+        return os;
     }
 
     void catchFish(const Fish& fish) {
@@ -300,6 +356,18 @@ public:
 
     const vector<string>& getFishNamesForZone(int zone) const {
         return zoneFishNames[zone];
+    }
+    friend ostream& operator<<(ostream& os, const FishingWorld& world) {
+        os << "\n=== Fishing World ==="
+           << "\nAvailable Fish by Zone:";
+
+        for (size_t z = 0; z < world.zoneFish.size(); z++) {
+            os << "\n\n" << ZONES[z] << ":";
+            for (const auto& fish : world.zoneFish[z]) {
+                os << "\n  " << fish; // Using Fish's operator<<
+            }
+        }
+        return os;
     }
 
 
