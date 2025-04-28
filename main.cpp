@@ -123,7 +123,7 @@ private:
     vector<bool> zonesUnlocked;
 
 public:
-    Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
+    explicit Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
         zonesUnlocked[0] = true; // Starting zone is always unlocked
     }
 
