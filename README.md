@@ -21,11 +21,12 @@ Fiecare zonă are caracteristici unice și propriile sale tipuri de pești.
 În fiecare zonă poți prinde 4 tipuri de pești, în funcție de raritate:
 
 
-Tip Pește	    Probabilitate	     Valoare estimativă
-Comun	            50%	            💲 (cea mai mică)
-Rar	              30%	            💲💲
-Epic	            15%	            💲💲💲
-Legendar	         5%	            💲💲💲💲 (cea mai mare)
+| Tip Pește   | Probabilitate | Valoare estimativă |
+|-------------|----------------|---------------------|
+| Comun       | 50%            | 💲 (cea mai mică)   |
+| Rar         | 30%            | 💲💲                |
+| Epic        | 15%            | 💲💲💲              |
+| Legendar    | 5%             | 💲💲💲💲 (cea mai mare) |
 
 Peștii mai rari au un preț de vânzare mai mare.
 
