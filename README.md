@@ -51,6 +51,13 @@ Upgrade-urile pentru momeală cresc multiplicatorul valorii peștilor.
 
 Exemplu: Un pește de 5$ cu un multiplicator ×2 valorează 10$.
 
+# 🎰 Minigame
+Înainte de a prinde un pește, trebuie să dovedești că ai reflexe bune!
+Pe lângă șansa de eșec, va trebui să tastezi rapid un cuvânt de 5 litere, generat aleatoriu din alfabetul englez.
+
+✅ Dacă reușești în timp util, poți trece mai departe la evaluarea șansei de capturare.
+❌ Dacă nu, peștele scapă!
+
 # 💰 Obiectiv
 Prinde pești → Vinde-i → Cumpără upgrade-uri → Explorează zone → Devino un pescar de elită!
 
