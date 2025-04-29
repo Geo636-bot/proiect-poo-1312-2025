@@ -3,10 +3,10 @@
 ## 🎣 Hooked! - Joc de pescuit în terminal
 Hooked! este un joc tip tycoon care rulează în terminal și îți oferă o experiență progresivă de pescuit, unde începi cu resurse limitate și evoluezi prin strategii inteligente și upgrade-uri.
 
-# 🧠 Concept
+## 🧠 Concept
 După cum sugerează și numele, Hooked! este un joc de pescuit. Obiectivul tău este să prinzi pești, să îi vinzi, să faci bani și să investești în echipamente mai bune pentru a deveni un pescar de top!
 
-# 🗺️ Zone de joc
+## 🗺️ Zone de joc
 Jocul este împărțit în 3 zone distincte:
 
 Zona 1 – București
@@ -17,7 +17,7 @@ Zona 3 – Marea Neagră
 
 Fiecare zonă are caracteristici unice și propriile sale tipuri de pești.
 
-# 🐟 Tipuri de pești
+## 🐟 Tipuri de pești
 În fiecare zonă poți prinde 4 tipuri de pești, în funcție de raritate:
 
 
@@ -30,7 +30,7 @@ Fiecare zonă are caracteristici unice și propriile sale tipuri de pești.
 
 Peștii mai rari au un preț de vânzare mai mare.
 
-# 🛠️ Upgrade-uri
+## 🛠️ Upgrade-uri
 Fiecare zonă permite 4 upgrade-uri pentru:
 
 Undiță
@@ -39,26 +39,26 @@ Momeală
 
 În total, poți debloca 12 upgrade-uri pentru fiecare componentă.
 
-# 🎣 Upgrade-uri undiță
+## 🎣 Upgrade-uri undiță
 La început, ai 60% șanse de eșec la pescuit.
 
 Fiecare upgrade reduce șansa de eșec cu 5%.
 
 Maximizând upgrade-urile, poți reduce șansa de eșec până la 0%.
 
-# ⚓ Upgrade-uri momeală
+## ⚓ Upgrade-uri momeală
 Upgrade-urile pentru momeală cresc multiplicatorul valorii peștilor.
 
 Exemplu: Un pește de 5$ cu un multiplicator ×2 valorează 10$.
 
-# 🎰 Minigame
+## 🎰 Minigame
 Înainte de a prinde un pește, trebuie să dovedești că ai reflexe bune!
 Pe lângă șansa de eșec, va trebui să tastezi rapid un cuvânt de 5 litere, generat aleatoriu din alfabetul englez.
 
 ✅ Dacă reușești în timp util, poți trece mai departe la evaluarea șansei de capturare.
 ❌ Dacă nu, peștele scapă!
 
-# 💰 Obiectiv
+## 💰 Obiectiv
 Prinde pești → Vinde-i → Cumpără upgrade-uri → Explorează zone → Devino un pescar de elită!
 
 ### Tema 0
