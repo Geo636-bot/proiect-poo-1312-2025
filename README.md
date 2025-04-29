@@ -1,6 +1,56 @@
 # Hooked!
 
-### Bun venit la Hooked!(Jocul va rula in terminal). Probabil ca ti ai dat seama deja din titlu ca acesta este un joc de pescuit.Jocul este un stil tycoon adica la inceput ai putini bani dupa care tot prinzi peste il vinzi faci bani si iti cumperi equipment mai bun.Equipment ul se refera doar la undita si momeala.Jocul se desfasoara pe 3 zone:Zona 1(Bucuresti), Zona 2(Delta Dunarii), Zona 3(Marea Neagra).Pe fiecare zona se pot face 4 upgrade uri pentru un total de 12 upgrade uri atat pe undita cat si pe momeala.Upgrade ul pe undita functioneaza astfel la inceput cand prinzi un peste ai 60% sansa de esec un upgrade iti scade sansa cu 5%.Upgrade ul pe momeala iti ridica multiplicatorul cand prinzi un peste ex. prinzi un peste care costa 5$ X 2(multiplicatorul)= 10$. Inca un detaliu important este ca in fiecare zona sunt 4 tipuri de pesti comun,rar,epic,legendar (50%,30%,15%,5%) raritate mai mica -> pret mai mare.
+## 🎣 Hooked! - Joc de pescuit în terminal
+Hooked! este un joc tip tycoon care rulează în terminal și îți oferă o experiență progresivă de pescuit, unde începi cu resurse limitate și evoluezi prin strategii inteligente și upgrade-uri.
+
+🧠 Concept
+După cum sugerează și numele, Hooked! este un joc de pescuit. Obiectivul tău este să prinzi pești, să îi vinzi, să faci bani și să investești în echipamente mai bune pentru a deveni un pescar de top!
+
+🗺️ Zone de joc
+Jocul este împărțit în 3 zone distincte:
+
+Zona 1 – București
+
+Zona 2 – Delta Dunării
+
+Zona 3 – Marea Neagră
+
+Fiecare zonă are caracteristici unice și propriile sale tipuri de pești.
+
+🐟 Tipuri de pești
+În fiecare zonă poți prinde 4 tipuri de pești, în funcție de raritate:
+
+
+Tip Pește	Probabilitate	Valoare estimativă
+Comun	50%	💲 (cea mai mică)
+Rar	30%	💲💲
+Epic	15%	💲💲💲
+Legendar	5%	💲💲💲💲 (cea mai mare)
+Peștii mai rari au un preț de vânzare mai mare.
+
+🛠️ Upgrade-uri
+Fiecare zonă permite 4 upgrade-uri pentru:
+
+Undiță
+
+Momeală
+
+În total, poți debloca 12 upgrade-uri pentru fiecare componentă.
+
+🎣 Upgrade-uri undiță
+La început, ai 60% șanse de eșec la pescuit.
+
+Fiecare upgrade reduce șansa de eșec cu 5%.
+
+Maximizând upgrade-urile, poți reduce șansa de eșec până la 0%.
+
+🪱 Upgrade-uri momeală
+Upgrade-urile pentru momeală cresc multiplicatorul valorii peștilor.
+
+Exemplu: Un pește de 5$ cu un multiplicator ×2 valorează 10$.
+
+💰 Obiectiv
+Prinde pești → Vinde-i → Cumpără upgrade-uri → Explorează zone → Devino un pescar de elită!
 
 ### Tema 0
 
