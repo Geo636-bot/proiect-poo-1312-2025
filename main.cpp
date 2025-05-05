@@ -56,7 +56,7 @@ public:
     }
 
     // Destructor
-    ~Fish() = default; 
+    ~Fish() = default; // No dynamic memory, default is fine
 
     double getValue(double baitMultiplier) const {
         auto it = find(RARITIES.begin(), RARITIES.end(), rarity);
@@ -82,8 +82,11 @@ private:
     vector<vector<int>> zoneUpgrades; // [zone][0=rod, 1=bait]
 
 public:
-    Equipment() : failChance(0.6), baitMultiplier(1.0) {
-        zoneUpgrades = vector<vector<int>>(3, vector<int>(2, 0));
+    Equipment()
+        : failChance(0.6),
+          baitMultiplier(1.0),
+          zoneUpgrades(3, std::vector<int>(2, 0)) {
+        // Constructor body can remain empty or contain other logic if needed
     }
 
     friend ostream& operator<<(ostream& os, const Equipment& eq) {
@@ -159,10 +162,14 @@ private:
     vector<map<string, bool>> zoneFishCaught;
 
 public:
-    explicit Player(const string& n) : name(n), money(100.0), currentZone(0) {
-        zonesUnlocked = vector<bool>(3, false);
-        zonesUnlocked[0] = true;
-        zoneFishCaught.resize(3);
+    explicit Player(const std::string& n)
+        : name(n),
+          money(100.0),
+          currentZone(0),
+          zonesUnlocked(3, false),       // initialize directly
+          zoneFishCaught(3)              // also initialize directly
+    {
+        zonesUnlocked[0] = true;         // set the first zone as unlocked
     }
 
     friend ostream& operator<<(ostream& os, const Player& player) {
