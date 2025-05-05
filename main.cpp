@@ -56,7 +56,7 @@ public:
     }
 
     // Destructor
-    ~Fish() = default; // No dynamic memory, default is fine
+    ~Fish() = default; 
 
     double getValue(double baitMultiplier) const {
         auto it = find(RARITIES.begin(), RARITIES.end(), rarity);
@@ -77,12 +77,14 @@ public:
 // ======================== Player Equipment ========================
 class Equipment {
 private:
-    double failChance; 
-    double baitMultiplier; 
-    int zoneUpgrades[3][2] = {{0}}; // [zone][0=rod, 1=bait]
+    double failChance;
+    double baitMultiplier;
+    vector<vector<int>> zoneUpgrades; // [zone][0=rod, 1=bait]
 
 public:
-    Equipment() : failChance(0.6), baitMultiplier(1.0) {}
+    Equipment() : failChance(0.6), baitMultiplier(1.0) {
+        zoneUpgrades = vector<vector<int>>(3, vector<int>(2, 0));
+    }
 
     friend ostream& operator<<(ostream& os, const Equipment& eq) {
         os << "\n=== Equipment Status ==="
@@ -157,8 +159,8 @@ private:
     vector<map<string, bool>> zoneFishCaught;
 
 public:
-
-    explicit Player(const string& n) : name(n), money(100.0), currentZone(0), zonesUnlocked(3, false) {
+    explicit Player(const string& n) : name(n), money(100.0), currentZone(0) {
+        zonesUnlocked = vector<bool>(3, false);
         zonesUnlocked[0] = true;
         zoneFishCaught.resize(3);
     }
@@ -169,7 +171,6 @@ public:
            << "\nMoney: $" << fixed << setprecision(2) << player.money
            << "\nCurrent Zone: " << ZONES[player.currentZone]
            << "\nFish Caught: " << player.fishCollection.size() << " species";
-
 
         // Display zone completion status
         os << "\n\nZone Progress:";
@@ -203,9 +204,8 @@ public:
 
         if (money >= cost) {
             money -= cost;
-            if (type == 'r') ////'r'=Rod
-
-                {
+            if (type == 'r') //'r'=Rod
+            {
                 equipment.upgradeRod(currentZone);
             } else {
                 equipment.upgradeBait(currentZone);
@@ -372,7 +372,6 @@ public:
         }
         return os;
     }
-
 
     Fish generateFish(int zone) const {
         uniform_real_distribution<double> dist(0.0, 1.0);
