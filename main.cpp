@@ -27,8 +27,6 @@ mt19937 createRandomEngine() {
     return mt19937(rd());
 }
 
-auto rng = createRandomEngine();
-
 // ======================== Fish Class ========================
 class Fish {
 private:
@@ -79,8 +77,8 @@ public:
 // ======================== Player Equipment ========================
 class Equipment {
 private:
-    double failChance; // Starts at 60%
-    double baitMultiplier; // Starts at 1.0
+    double failChance; 
+    double baitMultiplier; 
     int zoneUpgrades[3][2] = {{0}}; // [zone][0=rod, 1=bait]
 
 public:
@@ -101,6 +99,7 @@ public:
 
     bool attemptCatch() const {
         uniform_real_distribution<double> dist(0.0, 1.0);
+        auto rng = createRandomEngine();
         return dist(rng) > failChance;
     }
 
@@ -142,7 +141,7 @@ public:
 
     int getUpgradeCount(int zone, char type) const {
         if (zone < 0 || zone >= 3) return 0;
-        return zoneUpgrades[zone][type == 'r' ? 0 : 1];
+        return zoneUpgrades[zone][type == 'r' ? 0 : 1]; //'r'=Rod
     }
 };
 
@@ -204,7 +203,9 @@ public:
 
         if (money >= cost) {
             money -= cost;
-            if (type == 'r') {
+            if (type == 'r') ////'r'=Rod
+
+                {
                 equipment.upgradeRod(currentZone);
             } else {
                 equipment.upgradeBait(currentZone);
@@ -266,8 +267,8 @@ public:
 
         if (zone > currentZone) {
             for (int z = 0; z < zone; z++) {
-                if (equipment.getUpgradeCount(z, 'r') < UPGRADES_PER_ZONE ||
-                    equipment.getUpgradeCount(z, 'b') < UPGRADES_PER_ZONE) {
+                if (equipment.getUpgradeCount(z, 'r') < UPGRADES_PER_ZONE ||  //'r'=Rod
+                    equipment.getUpgradeCount(z, 'b') < UPGRADES_PER_ZONE) {  //'b'=Bait
                     return false;
                 }
             }
@@ -375,6 +376,7 @@ public:
 
     Fish generateFish(int zone) const {
         uniform_real_distribution<double> dist(0.0, 1.0);
+        auto rng = createRandomEngine();
         double randVal = dist(rng);
         double cumulative = 0.0;
 
@@ -408,6 +410,7 @@ int getValidatedInput(int min, int max) {
 string generateRandomWord(int length) {
     string word;
     uniform_int_distribution<int> dist('a', 'z');
+    auto rng = createRandomEngine();
     for (int i = 0; i < length; i++) {
         word += dist(rng);
     }
@@ -446,8 +449,8 @@ void displayMainMenu() {
 }
 
 void displayUpgradeMenu(const Player& player) {
-    int rodCost = player.calculateUpgradeCost('r');
-    int baitCost = player.calculateUpgradeCost('b');
+    int rodCost = player.calculateUpgradeCost('r');//'r'=Rod
+    int baitCost = player.calculateUpgradeCost('b');//'b'=Bait
 
     cout << "\n=== Upgrade Equipment ===\n"
          << "Current Money: $" << fixed << setprecision(2) << player.getMoney() << "\n\n"
@@ -510,7 +513,8 @@ int main() {
                     if (upgradeChoice == 0) break;
 
                     if (upgradeChoice == 1 || upgradeChoice == 2) {
-                        player.attemptUpgrade(upgradeChoice == 1 ? 'r' : 'b');
+                        player.attemptUpgrade(upgradeChoice == 1 ? 'r' : 'b');//'r'=Rod
+                                                                              //'b'=Bait
                     }
                 }
                 break;
